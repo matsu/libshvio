@@ -45,7 +45,7 @@
 
 #endif
 
-#define VIO6_NUM_ENTITIES	(5 + 4 + 2 + 1 + 1)
+#define VIO6_NUM_ENTITIES	(5 + 4 + 2 + 1 + 1 + 1)
 
 static struct shvio_entity vio6_ent[] = {
 	/* RPF */
@@ -155,6 +155,15 @@ static struct shvio_entity vio6_ent[] = {
 		.dpr_ctrl	=	3,
 		.dpr_shift	=	16,
 		.funcs	=	SHVIO_FUNC_BLEND,
+		.lock	=	PTHREAD_MUTEX_INITIALIZER,
+	},
+	/* SRU */
+	{
+		.idx	=	0,
+		.dpr_target	=	8,
+		.dpr_ctrl	=	1,
+		.dpr_shift	=	16,
+		.funcs	=	SHVIO_FUNC_SUPERRES,
 		.lock	=	PTHREAD_MUTEX_INITIALIZER,
 	},
 };
@@ -915,6 +924,43 @@ vio6_bru_setup(SHVIO *vio, struct shvio_entity *entity,
 		write_reg(base_addr, 0, BRU_CTRL(i));
 	}
 
+}
+
+static void
+vio6_sru_setup(SHVIO *vio, struct shvio_entity *entity,
+	       const struct ren_vid_surface *src,
+	       const struct ren_vid_surface *dst,
+	       int lv)
+{
+	void *base_addr = vio->uio_mmio.iomem;
+	const struct {
+		uint32_t	p0;
+		uint32_t	p1;
+		uint32_t	p5;
+		uint32_t	p6;
+		uint32_t	p7;
+		uint32_t	p8;
+	} params[6] = {
+		{ 256, 4, 0x7fff, 24, 40, 255 },
+		{ 256, 4, 0x7fff,  8, 16, 255 },
+		{ 384, 5, 0x7fff, 36, 60, 255 },
+		{ 384, 5, 0x7fff, 12, 27, 255 },
+		{ 511, 6, 0x7fff, 48, 80, 255 },
+		{ 511, 6, 0x7fff, 16, 36, 255 },
+	};
+
+	if ((lv < 0) || (lv > 5)) {
+		debug_info("ERR: wrong level specified.");
+		return;
+	}
+
+	write_reg(base_addr, SRU_C0_EN | SRU_C0_COL_YCBCR |
+		  SRU_C0_MODE_DOUBLE | SRU_C0_PARAM1(params[lv].p1) |
+		  SRU_C0_PARAM0(params[lv].p0), SRU_CTRL0);
+	write_reg(base_addr, SRU_C1_PARAM5(params[lv].p5), SRU_CTRL1);
+	write_reg(base_addr, SRU_C2_PARAM8(params[lv].p8) |
+		  SRU_C2_PARAM7(params[lv].p7) |
+		  SRU_C2_PARAM6(params[lv].p6), SRU_CTRL2);
 }
 
 static void

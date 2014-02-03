@@ -75,6 +75,7 @@ typedef enum {
 	SHVIO_FUNC_EFFECT =	1 << 4,
 	SHVIO_FUNC_BLEND =	1 << 5,
 	SHVIO_FUNC_SINK =	1 << 6,
+	SHVIO_FUNC_SUPERRES =	1 << 7,
 } shvio_func_t;
 
 #define N_INPADS	4

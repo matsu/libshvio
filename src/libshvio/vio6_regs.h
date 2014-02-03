@@ -189,4 +189,19 @@
 #define BRU_BLD_INV_SRCALPHA	0x3
 #define BRU_BLD_FIXED		0x4
 
+/* SRU control */
+#define SRU_CTRL0		0x2200
+#define SRU_CTRL1		0x2204
+#define SRU_CTRL2		0x2208
+#define SRU_C0_PARAM0(_v)	(((_v) & 0x1ff) << 16)
+#define SRU_C0_PARAM1(_v)	(((_v) & 0x1f) << 8)
+#define SRU_C0_MODE_DOUBLE	(4 << 4)
+#define SRU_C0_COL_YCBCR	(2 << 1)
+#define SRU_C0_COL_RGB		(7 << 1)
+#define SRU_C0_EN		(1 << 0)
+#define SRU_C1_PARAM5(_v)	(((_v) & 0x7ff) << 0)
+#define SRU_C2_PARAM6(_v)	(((_v) & 0xff) << 16)
+#define SRU_C2_PARAM7(_v)	(((_v) & 0xff) << 8)
+#define SRU_C2_PARAM8(_v)	(((_v) & 0xff) << 0)
+
 #endif /* __SHVIO6_REGS_H__ */
