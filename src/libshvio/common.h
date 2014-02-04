@@ -108,6 +108,8 @@ struct SHVIO {
 	int bundle_processing_lines;
 	int bundle_remaining_lines;
 
+	int sru_level;
+
 	struct shvio_operations ops;
 	struct shvio_entity *locked_entities;
 	struct shvio_entity *sink_entity;

@@ -1358,10 +1358,11 @@ vio6_setup_blend(
 				debug_info("ERR: No scale entity unavailable!");
 				goto fail_lock_entities;
 			}
-			if ((i == 0) && is_ycbcr(src_list[i]->format) &&
-				 (src_list[i]->w <= 1024) && (src_list[i]->h <= 4095)) {
+			if ((i == 0) && (vio->sru_level > 0) &&
+			    is_ycbcr(src_list[i]->format) &&
+			    (src_list[i]->w <= 1024) &&
+			    (src_list[i]->h <= 4095)) {
 				struct ren_vid_surface scale_in;
-				const int lv = 2;	/* level of the super resolution processing */
 
 				ent_supres = vio6_lock(vio, SHVIO_FUNC_SUPERRES);
 				if (ent_supres == NULL) {
@@ -1373,7 +1374,7 @@ vio6_setup_blend(
 					debug_info("ERR: cannot make a link from src to sru");
 					goto fail_supres;
 				}
-				vio6_sru_setup(vio, ent_supres, src_list[i], NULL, lv - 1);
+				vio6_sru_setup(vio, ent_supres, src_list[i], NULL, vio->sru_level - 1);
 				ret = vio6_link(vio, ent_supres, ent_scale, 0);	/* make a link from supres to scale */
 				if (ret < 0) {
 					debug_info("ERR: cannot make a link from sru to scale");

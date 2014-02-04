@@ -27,6 +27,7 @@
 #endif
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
@@ -41,6 +42,7 @@ SHVIO *shvio_open_named(const char *name)
 {
 	SHVIO *vio;
 	int ret;
+	char *strenv;
 
 	vio = calloc(1, sizeof(*vio));
 	if (!vio)
@@ -70,6 +72,14 @@ SHVIO *shvio_open_named(const char *name)
 		&vio->uio_mmio.iomem);
 	if (!ret)
 		goto err;
+
+	/* SRU level */
+	strenv = getenv("SHVIO_SRU_LEVEL");
+	if (strenv) {
+		int val = strtol(strenv, NULL, 0);
+		if ((val >= 0) && (val <= 6))
+			vio->sru_level = val;
+	}
 
 	return vio;
 
