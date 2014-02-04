@@ -1348,7 +1348,7 @@ vio6_setup_blend(
 		}
 		if (src_list[i]->w != src_list[i]->blend_out.w ||
 				src_list[i]->h != src_list[i]->blend_out.h) {
-			struct shvio_entity *ent_scale;
+			struct shvio_entity *ent_scale, *ent_supres;
 			struct ren_vid_surface scale_out;
 			scale_out = *(src_list[i]);
 			scale_out.w = src_list[i]->blend_out.w;
@@ -1358,12 +1358,40 @@ vio6_setup_blend(
 				debug_info("ERR: No scale entity unavailable!");
 				goto fail_lock_entities;
 			}
-			ret = vio6_link(vio, ent_src, ent_scale, 0);	/* make a link from src to scale */
-			if (ret < 0) {
-				debug_info("ERR: cannot make a link from src to scale");
-				goto fail_link_entities;
+			if ((i == 0) && is_ycbcr(src_list[i]->format) &&
+				 (src_list[i]->w <= 1024) && (src_list[i]->h <= 4095)) {
+				struct ren_vid_surface scale_in;
+				const int lv = 2;	/* level of the super resolution processing */
+
+				ent_supres = vio6_lock(vio, SHVIO_FUNC_SUPERRES);
+				if (ent_supres == NULL) {
+					debug_info("ERR: No superres entity unavailable!");
+					goto fail_supres;
+				}
+				ret = vio6_link(vio, ent_src, ent_supres, 0);	/* make a link from src to supres */
+				if (ret < 0) {
+					debug_info("ERR: cannot make a link from src to sru");
+					goto fail_supres;
+				}
+				vio6_sru_setup(vio, ent_supres, src_list[i], NULL, lv - 1);
+				ret = vio6_link(vio, ent_supres, ent_scale, 0);	/* make a link from supres to scale */
+				if (ret < 0) {
+					debug_info("ERR: cannot make a link from sru to scale");
+					goto fail_supres;
+				}
+				scale_in = *(src_list[i]);
+				scale_in.w *= 2;
+				scale_in.h *= 2;
+				vio6_uds_setup(vio, ent_scale, &scale_in, &scale_out);	/* color */
+			} else {
+			fail_supres:
+				ret = vio6_link(vio, ent_src, ent_scale, 0);	/* make a link from src to scale */
+				if (ret < 0) {
+					debug_info("ERR: cannot make a link from src to scale");
+					goto fail_link_entities;
+				}
+				vio6_uds_setup(vio, ent_scale, src_list[i], &scale_out);	/* color */
 			}
-			vio6_uds_setup(vio, ent_scale, src_list[i], &scale_out);	/* color */
 			ret = vio6_link(vio, ent_scale, ent_blend, i);	/* make a link from scale to blend */
 			if (ret < 0) {
 				debug_info("ERR: cannot make a link from scale to blend");
