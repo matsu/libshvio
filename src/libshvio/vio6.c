@@ -676,7 +676,7 @@ vio6_rpf_setup(SHVIO *vio, struct shvio_entity *entity,
 
 	viofmt = fmt_info(src->format);
 	val = viofmt->fmtid;
-	if (is_ycbcr(src->format) == is_rgb(dst->format)) {
+	if (is_rgb(src->format)) {
 		val |= FMT_DO_CSC;
 		if (vio->bt709)
 			val |= FMT_WRTM_BT709;
@@ -811,7 +811,7 @@ vio6_wpf_setup(SHVIO *vio, struct shvio_entity *entity,
 
 	viofmt = fmt_info(dst->format);
 	val = viofmt->fmtid;
-	if (is_ycbcr(src->format) == is_rgb(dst->format)) {
+	if (is_rgb(dst->format)) {
 		val |= FMT_DO_CSC;
 		if (vio->bt709)
 			val |= FMT_WRTM_BT709;
