@@ -1199,6 +1199,9 @@ vio6_start_bundle(SHVIO *vio, int bundle_lines)
 	if (entity == NULL)
 		return;
 
+	if (bundle_lines > vio->bundle_remaining_lines)
+		bundle_lines = vio->bundle_remaining_lines;
+
 	if (bundle_lines != vio->bundle_processing_lines) { 
 		struct shvio_entity *src_entity;
 
